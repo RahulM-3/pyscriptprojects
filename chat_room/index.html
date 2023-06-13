@@ -10,8 +10,8 @@
     <script defer src="https://pyscript.net/latest/pyscript.js"></script>
 
     <py-config>
-      [[fetch]]
-      files = ["/mnt/chromeos/MyFiles/Projects/pyscriptprojects/utils/request.py"]
+		[[fetch]]
+      	files = ["/request.py"]
     </py-config>
   </head>
 
@@ -31,11 +31,10 @@
     <py-script>
         import asyncio
 		import json
-		from /request import request
+		from request import request
 		
 		username = "user"
 		url = "https://my-json-server.typicode.com/RahulM-3/user-apis/db" # message room api
-		generaldata = await request(url+"/general")
 		
 		async def send(): # send message to room
 			text = Element("message")
