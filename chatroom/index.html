@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <title>chat room</title>
+
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css"/>
+		<link rel="stylesheet" href="style.css"/>
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+		<py-script src="index.py"></py-script>
+
+    <py-config>
+		[[fetch]]
+      	files = ["/request.py"]
+    </py-config>
+  </head>
+
+  <body py-click="clearerror()">
+    <div id="main">
+		<div id="gnrl_txtf">
+        	<h4 id="cntto">Connected to None</h4>
+			<h4 id="uname">Set username</h4>
+        	<textarea id="textfield" placeholder="Type a username or leave it empty for default username Note: username cannot be changed"></textarea>
+			<label id="displayerror" py-mouseover="keeperror()" py-mouseout="eraseerror()"></label>
+		</div>
+		<div id="btns">
+			<button id="setname" py-click="callsetname()">Set name</button>
+			<button id="send", py-click="callsend()" hidden>Send</button>
+			<button id="create" py-click="callcreate()">Create</button>
+      <button id="cnt" py-click="callconnect()">Connect</button>
+		</div>
+		<div id="general">
+			
+		</div>
+    </div>
+
+    <div id="prevmsg"></div>
+  </body>
+</html>

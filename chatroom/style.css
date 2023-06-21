@@ -1,0 +1,77 @@
+body{
+    margin: 0 0;
+    margin-left: 300px;
+    margin-right: 300px;
+    height: 100vh;
+}
+
+#main{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+#main h4{
+    margin: 0;
+}
+
+#main #gnrl_txtf{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+#main #gnrl_txtf textarea{
+    resize: none;
+    height: fit-content;
+    width: 280px;
+}
+
+#main #displayerror{
+    width: 300px;
+    height: fit-content;
+    position: relative;
+    left: 25px;
+}
+
+#main #btns{
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: auto;
+    width: auto;
+    justify-content: flex-start;
+    top: 40px;
+}
+
+#main #btns button{
+    margin-top: 5px;
+    margin-left: 5px;
+}
+
+#main #btns #setname{
+    position: relative;
+    top: 10px;
+}
+
+#main #btns #send{
+    position: relative;
+    top: 10px;
+}
+
+#main #displayerror{
+    position: relative;
+    margin: 10px 10px;
+}
+
+#cnt{
+    visibility: hidden;
+}
+#create{
+    visibility: hidden;
+}
+#send{
+    visibility: visible;
+}
