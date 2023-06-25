@@ -17,7 +17,7 @@
     </py-config>
   </head>
 
-  <body py-click="clearerror()">
+  <body py-click="clearerror()" id="body">
     <div id="main">
 		<div id="gnrl_txtf">
         	<h4 id="cntto">Connected to None</h4>
@@ -26,16 +26,17 @@
 			<label id="displayerror" py-mouseover="keeperror()" py-mouseout="eraseerror()"></label>
 		</div>
 		<div id="btns">
-			<button id="setname" py-click="callsetname()">Set name</button>
-			<button id="send", py-click="callsend()" hidden>Send</button>
-			<button id="create" py-click="callcreate()">Create</button>
-      <button id="cnt" py-click="callconnect()">Connect</button>
+			<button id="setname" py-click="callasyncfunc('setname()')">Set name</button>
+			<button id="send", py-click="callasyncfunc('send()')" hidden>Send</button>
+			<button id="create" py-click="callasyncfunc('create()')">Create</button>
+      <button id="cnt" py-click="callasyncfunc('connect()')">Connect</button>
+      <button id=gencf py-click="callasyncfunc('gen_ctxtf()')" hidden>Generate File</button>
 		</div>
 		<div id="general">
 			
 		</div>
     </div>
 
-    <div id="prevmsg"></div>
+    <div id="livemsg"></div>
   </body>
 </html>

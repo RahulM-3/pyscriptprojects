@@ -1,10 +1,32 @@
 import asyncio
 import json
 from request import request
-import threading
+from js import Blob, URL
+from datetime import datetime
 
 username = "user"
+userrole = ""
+roomcode = ""
 url = "https://rahul-s-database-default-rtdb.firebaseio.com/chatroom.json" # chat room (json)
+
+async def updatemessage(): # update new message
+    while(1):
+        chatroom = await request(url, asjson=True)
+        message_q = chatroom["rooms"][roomcode]["message_queue"]
+
+        while(len(message_q) > 1):
+            for m in message_q.pop(1).items():
+                Element("livemsg").element.innerHTML += "<p>"+m[0]+":"+m[1]+"</p>"
+                newmsg = {m[0]:m[1]}
+            Element("displayerror").element.innerText = ""
+
+            chatroom["rooms"][roomcode]["messages"].append(newmsg)
+
+            chatroom = json.dumps(chatroom)
+            await request(url, body=chatroom, method="PUT")
+
+            await asyncio.sleep(0)
+        await asyncio.sleep(0)
 
 async def setname(): # set user name
     global username
@@ -39,6 +61,7 @@ async def setname(): # set user name
         Element("displayerror").element.innerText = "User name already in use!"
 
     else: # set username
+
         # update text field and button for create and join room
         Element("textfield").element.value = ""
         Element("textfield").element.placeholder = "Type a 5 character code to create or join a room"
@@ -56,15 +79,12 @@ async def setname(): # set user name
         newuser = json.dumps(chatroom)
         await request(url, body=newuser, method="PUT")
 
-
-def callsetname():
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(setname())
-
 async def create(): # create a room
 
     chatroom = await request(url, asjson=True)
 
+    global roomcode
+    global userrole
     roomcode = Element("textfield").element.value # user entered room code
 
     if(roomcode in chatroom["rooms"]): # display error if room already exist
@@ -73,11 +93,13 @@ async def create(): # create a room
 
     elif((len(roomcode) == 7 and roomcode[5:] == "-p" in roomcode) or len(roomcode) == 5): # create a room
 
+        userrole = "owner"
         # update buttons
 
         Element("cnt").element.remove()
         Element("create").element.remove()
         Element("send").element.removeAttribute("hidden")
+        Element("gencf").element.removeAttribute("hidden")
 
         # room type
         Type = "public"
@@ -87,8 +109,8 @@ async def create(): # create a room
 
         # new room
         chatroom["rooms"][roomcode] = {"type":Type}
-        chatroom["rooms"][roomcode]["message_queue"] = ["none"]
-        chatroom["rooms"][roomcode]["messages"] = ["none"]
+        chatroom["rooms"][roomcode]["message_queue"] = [{"mrnobodyinchat":"This is reserved"}]
+        chatroom["rooms"][roomcode]["messages"] = [{"mrnobodyinchat":"Wellcum to"+roomcode}]
         chatroom["rooms"][roomcode]["participants"] = 1
         chatroom["rooms"][roomcode]["participants_list"] = [username]
         chatroom["rooms"][roomcode]["kick_list"] = ["none"]
@@ -107,28 +129,39 @@ async def create(): # create a room
         Element("textfield").element.value = ""
         Element("textfield").element.placeholder = "messages"
 
+        Element("displayerror").element.innerText = ""
+        Element("body").element.removeAttribute("py-click")
+        Element("displayerror").element.removeAttribute("py-mouseover")
+        Element("displayerror").element.removeAttribute("py-mouseout")
+
+        callasyncfunc("updatemessage()")
+
     else: # display error if roomcode is empty
         Element("displayerror").element.innerText = "Enter a 5 character roomcode"
-
-def callcreate():
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(create())
 
 async def connect(): # join a room
     chatroom = await request(url, asjson=True)
 
+    global roomcode
+    global userrole
     roomcode = Element("textfield").element.value # user entered room code
 
     if(roomcode not in chatroom["rooms"]): # display error if room not exist
         Element("textfield").element.value = ""
         Element("displayerror").element.innerText = "Room does not exist"
 
-    elif(len(roomcode) == 5): # join a room
+    else: # join a room
+
+        userrole = "member"
 
         # update buttons
         Element("cnt").element.remove()
         Element("create").element.remove()
         Element("send").element.removeAttribute("hidden")
+
+        # update text field
+        Element("textfield").element.value = ""
+        Element("textfield").element.placeholder = "messages"
         
         # update room
         chatroom["rooms"][roomcode]["participants"] += 1
@@ -139,34 +172,73 @@ async def connect(): # join a room
 
         Element("cntto").element.innerText = "Connected to "+roomcode
 
-        # update text field
+        Element("displayerror").element.innerText = ""
+        Element("body").element.removeAttribute("py-click")
+        Element("displayerror").element.removeAttribute("py-mouseover")
+        Element("displayerror").element.removeAttribute("py-mouseout")
 
-        Element("textfield").element.value = ""
-        Element("textfield").element.placeholder = "messages"
-
-    else: # display error if roomcode is empty
-        Element("displayerror").element.innerText = "Enter a 5 character roomcode"
-
-def callconnect():
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(connect())
+        callasyncfunc("updatemessage()")
 
 async def send(): # send a message
-	print("sending")
+    Element("displayerror").element.innerText = "sending..."
+    chatroom = await request(url, asjson=True)
+    
+    chatroom["rooms"][roomcode]["message_queue"].append({username:Element("textfield").element.value})
+    
+    newmessage = json.dumps(chatroom)
+    await request(url, body=newmessage, method="PUT")
 
-def callsend():
+    Element("textfield").element.value = ""
+
+async def delete_data(): # delete all data of the user
+    chatroom = await request(url, asjson=True)
+    if(username in chatroom["general"]["user_list"]):
+        chatroom["general"]["user_list"].remove(username)
+        chatroom["general"]["total_users"] -= 1
+        
+        if(roomcode in chatroom["rooms"]):
+            if(userrole == "owner"):
+                chatroom["general"]["room_list"].remove(roomcode)
+                chatroom["general"]["total_rooms"] -= 1
+                chatroom["rooms"].pop(roomcode)
+        
+            chatroom["rooms"][roomcode]["participants_list"].remove(username)
+            chatroom["rooms"][roomcode]["participants"] -= 1
+        chatroom = json.dumps(chatroom)
+        await request(url, body=chatroom, method="PUT")
+    chatroom["rooms"]["reloaded"] = True
+    chatroom = json.dumps(chatroom)
+    await request(url, body=chatroom, method="PUT")
+
+async def gen_ctxtf():
+    messages = await request(url, asjson=True)
+    messages = messages["rooms"][roomcode]["messages"]
+    chat = []
+    for i in messages:
+        for m in i.items():
+            chat.append(m[0]+":"+m[1])
+    filelink = Element("filelink")
+    file = Blob([chat], {type:"text/plain"})
+    filelink.element.href = URL.createObjectURL(file)
+    filelink.element.download = "Chats.txt"
+    filelink.element.click()
+    URL.revokeObjectURL(filelink.element.href)
+
+    Element("gencf").element.remove()
+
+def callasyncfunc(funcname):
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(send())
+    loop.run_until_complete(eval(funcname))
 
+# remove error message
 erase = True
-def keeperror(): # keep error message when mouse is over the error message
+def keeperror():
     global erase
     erase = False
 
-def eraseerror(): # erase error message when mouse is not over the error message
-    global erase
+def eraseerror():
     erase = True
 
-def clearerror(): # to clear error
+def clearerror():
     if(erase):
         Element("displayerror").element.innerText = ""

@@ -61,6 +61,12 @@ body{
     top: 10px;
 }
 
+#main #btns #send{
+    position: relative;
+    left: 50px;
+    top: 30px;
+} 
+
 #main #displayerror{
     position: relative;
     margin: 10px 10px;
@@ -71,7 +77,4 @@ body{
 }
 #create{
     visibility: hidden;
-}
-#send{
-    visibility: visible;
 }
